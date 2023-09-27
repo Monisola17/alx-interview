@@ -5,7 +5,7 @@
 
 
 def pascal_triangle(n):
- """
+    """
     Returns a list of integers
     representing the Pascal Triangle of n
     returns empty list if n <= 0
@@ -29,4 +29,3 @@ def pascal_triangle(n):
         triangle.append(row)
 
     return triangle
-
