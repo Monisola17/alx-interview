@@ -1,47 +1,44 @@
 #!/usr/bin/python3
+"""script that reads stdin line by line and computes metrics"""
 
-import re
 import sys
 
-# Initialize variables to store metrics
-total_file_size = 0
-status_code_counts = {}
+
+i = 0
+sum_file_size = 0
+status_code = {'200': 0,
+               '301': 0,
+               '400': 0,
+               '401': 0,
+               '403': 0,
+               '404': 0,
+               '405': 0,
+               '500': 0}
 
 try:
-    line_count = 0
-
     for line in sys.stdin:
-        line = line.strip()
-
-        # Use regular expression to parse the line in the specified format
-        match = re.match(r'(\d+\.\d+\.\d+\.\d+) - \[.*\] "GET /projects/260 HTTP/1\.1" (\d+) (\d+)', line)
-
-        if match:
-            ip, status_code, file_size = match.groups()
-
-            # Update total file size
-            total_file_size += int(file_size)
-
-            # Update status code counts
-            status_code = int(status_code)
-            if status_code in (200, 301, 400, 401, 403, 404, 405, 500):
-                if status_code in status_code_counts:
-                    status_code_counts[status_code] += 1
-                else:
-                    status_code_counts[status_code] = 1
-
-            line_count += 1
-
-        # Print metrics every 10 lines
-        if line_count % 10 == 0:
-            print("Total file size: File size:", total_file_size)
-            for code in sorted(status_code_counts.keys()):
-                print("{}: {}".format(code, status_code_counts[code]))
-
-except KeyboardInterrupt:
-    # Handle CTRL + C by printing the metrics and exiting
-    print("Total file size: File size:", total_file_size)
-    for code in sorted(status_code_counts.keys()):
-        print("{}: {}".format(code, status_code_counts[code]))
-    sys.exit(0)
-
+        args = line.split(' ')
+        if len(args) > 2:
+            status_line = args[-2]
+            file_size = args[-1]
+            if status_line in status_code:
+                status_code[status_line] += 1
+            sum_file_size += int(file_size)
+            i += 1
+            if i == 10:
+                print('File size: {:d}'.format(sum_file_size))
+                sorted_keys = sorted(status_code.keys())
+                for key in sorted_keys:
+                    value = status_code[key]
+                    if value != 0:
+                        print('{}: {}'.format(key, value))
+                i = 0
+except Exception:
+    pass
+finally:
+    print('File size: {:d}'.format(sum_file_size))
+    sorted_keys = sorted(status_code.keys())
+    for key in sorted_keys:
+        value = status_code[key]
+        if value != 0:
+            print('{}: {}'.format(key, value))
